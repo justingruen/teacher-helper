@@ -22,7 +22,18 @@ client.on('message', message => {
     
 
     if (command === 'help') {
-		return message.channel.send("comehere - Pulls all users from the given voice channels into the voice channel the author is in.");
+        message.channel.send("!comehere channel1 channel 2 etc \n     Pulls all users from the given voice channels into the voice channel the author is in.\n");
+        message.channel.send("!split [number/percent of students per channel] channel1 channel2 etc \n     Splits all students in the voice channel across the channels provided based on the number or percent also provided. For instance, if you'd like 10 students per channel out of 35 students, you need to provide 3 voice channels.\n");
+        message.channel.send("!studentcount \n      Displays the number of students currently in the author's voice channel\n");
+        return
+    }
+
+    if (command === 'studentcount') {
+        if (message.member.voice.channel === null){
+            return message.reply("Please join a voice channel first!")
+        }
+        const ele = ["There are ", message.member.voice.channel.members.size - 1, " students."]
+        return message.channel.send(ele.join(''));
     }
 
 
@@ -30,7 +41,8 @@ client.on('message', message => {
     if (command === 'comehere') {   //struct: !comehere channel1 channel2 etc
         if (!args.length) {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
-		} else if (message.member.roles.cache.has(role => role.name === 'professor' || role.name === 'Professor')){      
+        } 
+        else if (message.member.roles.cache.has(role => role.name === 'teacher' || role.name === 'Teacher')){      
             //check whether the author is in a vc & has role of 'Teacher', if so grab their voice channel ID
             const userVC = message.member.voice;
             if (!userVC.channel) return message.reply("Please first join a voice channel.");
@@ -58,28 +70,28 @@ client.on('message', message => {
             if (memberList.length === 0) return message.reply("There were no members in the given channels");
             if (vcIDList.length === 0) return message.reply("There were no voice channels provided");
             else { for (i = 0; i < memberList.length; i++){
-                    member = message.guild.members.cache.get(memberList[i])      
-                    member.voice.setChannel(vcIDList[0])        //this could just be moved to the if block up above honestly
+                    member = message.guild.members.cache.get(memberList[i]);      
+                    member.voice.setChannel(vcIDList[0]);        //this could just be moved to the if block up above honestly
                     // this way moves all users near-at-once though. Prolly takes longer though bc of the added member = line
                 }
             }
-        }
+        } else message.reply("You do not have a teacher role!");
     }
 
 
 
-    if (command === 'split') {   //struct: !comehere channel1 channel2 etc
-        if (args.length < 3) {
+    if (command === 'split') {   //struct: !comehere 33% voicechannel1 voicechannel2 OR !comehere 4 voicechannel1 voicechannel2
+        if (args.length < 2) {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
 		} else if (message.member.roles.cache.has(role => role.name === 'teacher' || role.name === 'Teacher')){      
-            //take in arguments: number/percent, true/false, vc's
+            //take in arguments: number/percent, vc's
             const number = parseInt(args[0].substring(0, str.length-1));
-            if (args[0].includes("%")) const percent = true;
-            else{ const percent = false;}
-            const leaveStudents = args[1]
+            const percent = false;
+            if (args[0].includes("%")) percent = true;
+            else{ percent = false;}
             var vcIDList = []
-            for (i = 2; i < args.length; i++){
-                vcIDist.push(args[i])
+            for (i = 1; i < args.length; i++){
+                vcIDist.push(args[i]);
             }
 
             //find NumbStudents for the second If statement below!!!!
@@ -89,8 +101,8 @@ client.on('message', message => {
             if (percent && Math.floor(100/parseInt(number)) === vcIDList.length && number <= 50){
                 return message.reply(`Not enough channels provided. ${args[0]} requires ${Math.floor(100/parseInt(number))} chanenels`)
             }
-            if (percent === false && Math.floor(numStudents/parseInt(number)) > vcIDList.length){
-                return message.reply(`Not enough channels provided. ${args[0]} students per channel requires atleast ${Math.floor(100/parseInt(number))} chanenels`)
+            if (percent === false && Math.floor(numStudents/parseInt(number)) === vcIDList.length){
+                return message.reply(`Not enough channels provided. ${args[0]} students per channel requires ${Math.floor(100/parseInt(number))} chanenels`)
             }
 
             //loop through the vcNames to get the ID's
@@ -102,18 +114,8 @@ client.on('message', message => {
                 });
             }
 
-            var vcStudentsInOG
             //move students if its a percentage
-            if (percent){    //How the fuck do I document something like this and keep it understandable? I did very weird stuff
-                //Essentially, it checks how many students there are and finds the number of students that should be put in each channel
-                //based on the percent provided. Once a channel becomes full, students can't be put into that channel anymore. For instance,
-                //say 33% of 20 students, it puts 6 in each of the 3 channels. That leaves two students left over. Once each channel
-                //has a count of 6 so we know we're on the leftover students now, it will use a similar way to place leftovers.
-                //Lets say there are 100 students, 36% put into each of two channels. That leaves 28 students left over. In each student, it will
-                //auto add them to a channel. Once the student is added, that leftoverstudent count for that channel goes up by 1. Now we only place
-                //students into the other channel that hasn't had a student added yet. Now each count is 1, so we increase the leftoverCounter by 1.
-                //Now each channel can have 2 leftover students, so it continues randomly choosing. 
-
+            if (percent){
                 //count of students per voice channel, to keep track of how many we've put so far
                 var vcStudentPushedCount = [vcNameList.length].fill(0)
                 //bool for each channel if its already had a leftover student added in current iteration
@@ -194,7 +196,7 @@ client.on('message', message => {
                     }
                 });
             }
-        }
+        } else message.reply("You do not have a teacher role!");
     }
 
 });
