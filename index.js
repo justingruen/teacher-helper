@@ -22,14 +22,16 @@ client.on('message', message => {
 
     var command = message.content.substr(1).split(' ')[0];
     const args = message.content.slice(command.length+2).split(', ');
+    console.log(command)
+    console.log(args)
     
     
 
     if (command === 'help') {
-        message.channel.send("Only users with the professor role can use these commands!")
-        message.channel.send("!comehere channel1, channel 2, etc \n     Pulls all users from the given voice channels into the voice channel the author is in.\n");
+        message.channel.send("Only users with the teacher role can use these commands!")
+        message.channel.send("!yoink channel1, channel 2, etc \n     Pulls all users from the given voice channels into the voice channel the author is in.\n");
         message.channel.send("!split [number/percent (ie. 5 or 33%) of students per channel], channel1, channel2, etc \n     Splits all students in the voice channel across the channels provided based on the number or percent also provided. For instance, if you'd like 10 students per channel out of 35 students, you need to provide 3 voice channels.\n");
-        message.channel.send("!autosplit channel1, channel2, etc \n      Automatically equally splits students into the channels\n");
+        message.channel.send("!yeet channel1, channel2, etc \n      Automatically equally splits students into the channels\n");
         message.channel.send("!studentcount \n      Displays the number of students currently in the author's voice channel\n");
         return
     }
@@ -48,12 +50,12 @@ client.on('message', message => {
 
 
     //pushes all users in given voice channels into the author's voice channel
-    if (command === 'comehere') {   //struct: !comehere channel1 channel2 etc
+    if (command === 'yoink') {   //struct: !yoink channel1 channel2 etc
         if (!args.length) {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
         } 
-        else if (message.member.roles.cache.has(role => role.name === 'professor' || role.name === 'Professor')){      
-            //check whether the author is in a vc & has role of 'Professor', if so grab their voice channel ID
+        else if (message.member.roles.cache.some(role => role.name === 'teacher' || role.name === 'Teacher')){      
+            //check whether the author is in a vc & has role of 'teacher', if so grab their voice channel ID
             const userVC = message.member.voice;
             if (!userVC.channel) return message.reply("Please first join a voice channel.");
             else {
@@ -76,7 +78,7 @@ client.on('message', message => {
             }
             
             //push all members in memberList into author's voice channel
-            const member = message.guild.members.cache.get(memberList[0])  //init var outside of loop so it only happens once  
+            var member = message.guild.members.cache.get(memberList[0])  //init var outside of loop so it only happens once  
             if (memberList.length === 0) return message.reply("There were no members in the given channels");
             if (vcIDList.length === 0) return message.reply("There were no voice channels provided");
             else { for (i = 0; i < memberList.length; i++){
@@ -85,7 +87,7 @@ client.on('message', message => {
                     // this way moves all users near-at-once though. Prolly takes longer though bc of the added member = line
                 }
             }
-        } else message.reply("You do not have a professor role!");
+        } else message.reply("You do not have a teacher role!");
     }
 
 
@@ -93,15 +95,16 @@ client.on('message', message => {
     if (command === 'split') {   //struct: !comehere 33% voicechannel1 voicechannel2 OR !comehere 4 voicechannel1 voicechannel2
         if (args.length < 2) {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
-		} else if (message.member.roles.cache.has(role => role.name === 'professor' || role.name === 'Professor')){      
+		} else if (mmessage.member.roles.cache.some(role => role.name === 'teacher' || role.name === 'Teacher')){      
             //take in arguments: number/percent, vc's
             const number = parseInt(args[0].substring(0, str.length-1));
             const percent = false;
             if (args[0].includes("%")) percent = true;
             else{ percent = false;}
             var vcIDList = []
+            var vcNameList = []
             for (i = 1; i < args.length; i++){
-                vcIDList.push(args[i]);
+                vcNameList.push(args[i]);
             }
 
             //find NumbStudents for the second If statement below!!!!
@@ -206,27 +209,29 @@ client.on('message', message => {
                     }
                 });
             }
-        } else message.reply("You do not have a professor role!");
+        } else message.reply("You do not have a teacher role!");
     }
 
 
 
-    if (command === 'autosplit') {   //!autosplit channel1 channel2 etc.
-        if (args.length < 2) {
-			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
-		} else if (message.member.roles.cache.has(role => role.name === 'professor' || role.name === 'Professor')){      
+    if (command === 'yeet') {   //!yeet channel1 channel2 etc.
+        if (args.length < 1) {
+            return message.channel.send(`You didn't provide any channels, ${message.author}!`);
+		} else if (message.member.roles.cache.some(role => role.name === 'teacher' || role.name === 'Teacher')){      
             //take in arguments: vc's
             if (args[0].includes("%")) percent = true;
             else{ percent = false;}
             var vcIDList = []
-            for (i = 1; i < args.length; i++){
-                vcIDList.push(args[i]);
+            var vcNameList = []
+            for (i = 0; i < args.length; i++){
+                vcNameList.push(args[i]);
             }
 
             //find NumbStudents for the second If statement below
             numStudents = message.member.voice.channel.members.size - 1
 
-            //I dont think this is needed for this one - or any of them actually, it just wont run as well
+            //I dont think this is needed for this one - or any of them technically, although the others will be weird if theres more
+            // channels than needed. Maybe I still need to check if there are enough channels though in the others
             // //check whether the number of channels listed is acceptable
             // if (percent && Math.floor(100/parseInt(number)) === vcIDList.length && number <= 50){
             //     return message.reply(`Not enough channels provided. ${args[0]} requires ${Math.floor(100/parseInt(number))} chanenels`)
@@ -241,6 +246,9 @@ client.on('message', message => {
                 });
             }
 
+            console.log(vcNameList)
+            console.log(vcIDList)
+
 
             //count of students per voice channel, to keep track of how many we've put so far
             var vcStudentPushedCount = [vcNameList.length].fill(0)
@@ -248,6 +256,11 @@ client.on('message', message => {
             var vcLeftOverPushBool = [vcNameList.length].fill(false)
             var channelNum = 0
             var studentsLeavingPerChannel = Math.floor(numStudents / vcIDList.length);    //# number of max students per channel (based only on percent)
+            // Checks the students leaving per channel wont be 0 which happens when more channels than students.
+            // I could set it to equal the remainder if its 0, but this is fine too for now.
+            if (studentsLeavingPerChannel === 0){
+                return message.channel.send("Not enough channels inputted for it to split the students!")
+            }
             message.member.voice.channel.members.forEach(member => {
                 //dont move the author or bots
                 if (member.id != message.author.id && member.user.bot === false){
@@ -269,18 +282,22 @@ client.on('message', message => {
                         if (vcLeftOverPushBool.some(item => item !== true) === false) vcLeftOverPushBool.fill(false);
                     }  
                     else{
+                        console.log("Got here!")
                         //set channelNum equal to a random channel
                         channelNum = Math.floor(Math.random() * vcStudentPushedCount.length);
+                        console.log(channelNum)
+                        console.log(member.user.username)
                         //while that channel size is equal to studentsLeavingPerChannel, pick another channel
                         while (vcStudentPushedCount[channelNum] === studentsLeavingPerChannel){
                             channelNum = Math.floor(Math.random() * vcStudentPushedCount.length);
                         }
+                        console.log(channelNum)
                         member.voice.setChannel(vcIDList[channelNum]);
                         vcStudentPushedCount[channelNum] += 1;
                     }
                 }
             });
-        } else message.reply("You do not have a professor role!");
+        } else message.reply("You do not have a teacher role!");
     }
 });
 
