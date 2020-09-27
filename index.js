@@ -22,8 +22,10 @@ client.on('message', message => {
 
     var command = message.content.substr(1).split(' ')[0];
     const args = message.content.slice(command.length+2).split(', ');
+    console.log('===================')
     console.log(command)
     console.log(args)
+    console.log('===================')
     
     
 
@@ -249,9 +251,13 @@ client.on('message', message => {
             console.log(vcNameList)
             console.log(vcIDList)
 
+            console.log(vcNameList)
+            console.log(vcIDList)
 
             //count of students per voice channel, to keep track of how many we've put so far
-            var vcStudentPushedCount = [vcNameList.length].fill(0)
+            var vcStudentPushedCount = new Array(vcNameList.length)
+            vcStudentPushedCount.fill(0)
+
             //bool for each channel if its already had a leftover student added in current iteration
             var vcLeftOverPushBool = [vcNameList.length].fill(false)
             var channelNum = 0
@@ -268,6 +274,8 @@ client.on('message', message => {
                     //the following says: if some item is found that isn't equal to studentsLeavingPerChannel, return true. 
                     //if everything is equal to StudentsLeavingPerChannel, it outputs false. if outputs false, it means we're on the leftovers
                     if (vcStudentPushedCount.some(item => item !== studentsLeavingPerChannel) === false) {
+                        // console.log(vcStudentPushedCount)
+                        // console.log(studentsLeavingPerChannel)
                         //pick a random channel
                         channelNum = Math.floor(Math.random() * vcStudentPushedCount.length)
                         //while that channel has already had someone put in it, pick another channel
@@ -282,16 +290,14 @@ client.on('message', message => {
                         if (vcLeftOverPushBool.some(item => item !== true) === false) vcLeftOverPushBool.fill(false);
                     }  
                     else{
-                        console.log("Got here!")
                         //set channelNum equal to a random channel
                         channelNum = Math.floor(Math.random() * vcStudentPushedCount.length);
-                        console.log(channelNum)
-                        console.log(member.user.username)
+                        // console.log(channelNum)
+                        // console.log(member.user.username)
                         //while that channel size is equal to studentsLeavingPerChannel, pick another channel
                         while (vcStudentPushedCount[channelNum] === studentsLeavingPerChannel){
                             channelNum = Math.floor(Math.random() * vcStudentPushedCount.length);
                         }
-                        console.log(channelNum)
                         member.voice.setChannel(vcIDList[channelNum]);
                         vcStudentPushedCount[channelNum] += 1;
                     }
