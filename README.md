@@ -16,7 +16,7 @@ $ node index.js
 https://discord.com/api/oauth2/authorize?client_id=751089692153348118&permissions=0&scope=bot
 ```
 
-Note: Commands only work if the user has the role of "Teacher" (or "teacher"), and if the user is in the channel with the users being moved.
+Note: Commands only work if the user has the role of "Teacher" (or "teacher"), and if the user is in the channel with the users being moved (not applicable for yoink. in that case, moves others to your voice channel).
 
 
 ```bash
