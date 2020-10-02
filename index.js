@@ -35,6 +35,8 @@ client.on('message', message => {
         message.channel.send("!split [number/percent (ie. 5 or 33%) of students per channel], channel1, channel2, etc \n     Splits all students in the voice channel across the channels provided based on the number or percent also provided. For instance, if you'd like 10 students per channel out of 35 students, you need to provide 3 voice channels.\n");
         message.channel.send("!yeet channel1, channel2, etc \n      Automatically equally splits students into the channels\n");
         message.channel.send("!studentcount \n      Displays the number of students currently in the author's voice channel\n");
+        message.channel.send("!muteall \n      Mutes all students in the author's voice channel\n");
+        message.channel.send("!unmuteall \n      Unmutes all students in the author's voice channel\n");
         return
     }
 
@@ -304,6 +306,28 @@ client.on('message', message => {
                 }
             });
         } else message.reply("You do not have a teacher role!");
+    }
+
+    if (command === 'muteall') {   //!muteall
+        if (message.member.roles.cache.some(role => role.name === 'teacher' || role.name === 'Teacher')){
+            message.member.voice.channel.members.forEach(member => {
+                //dont mute the author or bots
+                if (member.id != message.author.id && member.user.bot === false){
+                    member.voice.setMute(True)
+                }
+            });
+        }
+    }
+
+    if (command === 'unmuteall') {   //!unmuteall
+        if (message.member.roles.cache.some(role => role.name === 'teacher' || role.name === 'Teacher')){
+            message.member.voice.channel.members.forEach(member => {
+                //dont mute the author or bots
+                if (member.id != message.author.id && member.user.bot === false){
+                    member.voice.setMute(False)
+                }
+            });
+        }
     }
 });
 
